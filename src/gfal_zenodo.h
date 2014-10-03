@@ -20,6 +20,7 @@
 #include <curl/curl.h>
 #include <gfal_api.h>
 #include <gfal_plugins_api.h>
+#include <json.h>
 
 
 /*
@@ -48,6 +49,11 @@ gfal_file_handle gfal2_zenodo_opendir(plugin_handle, const char*, GError**);
 int gfal2_zenodo_closedir(plugin_handle, gfal_file_handle, GError**);
 struct dirent* gfal2_zenodo_readdir(plugin_handle, gfal_file_handle, GError**);
 struct dirent* gfal2_zenodo_readdirpp(plugin_handle, gfal_file_handle, struct stat*, GError**);
+
+struct dirent* gfal2_zenodo_deposition_to_stat(json_object* entry,
+        struct dirent* dent, struct stat* st);
+struct dirent* gfal2_zenodo_file_to_stat(json_object* entry,
+        struct dirent* dent, struct stat* st);
 
 /*
  * Namespace operations

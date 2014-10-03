@@ -84,7 +84,7 @@ static int gfal2_zenodo_debug_callback(CURL *handle, curl_infotype type,
             break;
         case CURLINFO_DATA_IN:
             snprintf(msg_fmt, sizeof(msg_fmt), "DATA IN: %%.%zds", size);
-            //gfal_log(GFAL_VERBOSE_TRACE, msg_fmt, data);
+            gfal_log(GFAL_VERBOSE_TRACE, msg_fmt, data);
             break;
         case CURLINFO_DATA_OUT:
             snprintf(msg_fmt, sizeof(msg_fmt), "DATA OUT: %%.%zds", size);
@@ -104,6 +104,16 @@ static void gfal2_zenodo_set_logging(ZenodoHandle* zenodo)
     curl_easy_setopt(zenodo->curl_handle, CURLOPT_DEBUGFUNCTION, gfal2_zenodo_debug_callback);
 }
 
+// Set certification authorities
+static void gfal2_zenodo_set_ca(ZenodoHandle* zenodo)
+{
+	curl_easy_setopt(zenodo->curl_handle, CURLOPT_CAPATH, "/etc/grid-security/certificates");
+	gboolean insecure_mode = gfal2_get_opt_boolean_with_default(zenodo->gfal2_context, "HTTP PLUGIN", "INSECURE", FALSE);
+	if (insecure_mode) {
+		curl_easy_setopt(zenodo->curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
+	}
+}
+
 // GFAL2 will look for this symbol to register the plugin
 gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 {
@@ -115,6 +125,7 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
     zenodo->gfal2_context = handle;
 
     gfal2_zenodo_set_logging(zenodo);
+    gfal2_zenodo_set_ca(zenodo);
 
     zenodo_plugin.plugin_data = zenodo;
     zenodo_plugin.plugin_delete = gfal2_zenodo_delete_data;
